@@ -1,0 +1,49 @@
+:root {
+  --header-height: 2.5rem;
+  --main-padding: 1rem;
+  --board-size: calc(100vw - var(--main-padding) * 2);
+  --header-color: #282c34;
+  --blank-color: #111;
+  --cell-color: #eee;
+  --button-color: rgb(5, 8, 49);
+  
+  --cell-letter-size: 1rem;
+  --cell-number-size: 0.4rem;
+}
+html {
+  font-size: calc(1rem + 1vmin);
+}
+* {
+  box-sizing: border-box;
+}
+body {  
+  max-height: 100%;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+button {
+  color: var(--cell-color);
+  border-width: calc(var(--header-height) / 12);
+  border-style: solid;
+  border-color: #ffffff55;
+  border-radius: calc(var(--header-height) / 8);
+  font-size: 0.75rem;
+  width: 100%;
+  height: 100%;
+  padding: 0.5rem;
+  background: var(--button-color);
+}
+
+@media (orientation: landscape) {
+  :root {
+    --header-height: calc(1.5rem + 2vh);
+    --board-size: calc(((var(--view-height) - var(--header-height)) - 5rem) + ((100vw - var(--view-height)) / 6));
+    --cell-letter-size: 1.5rem;
+    --cell-number-size: 0.5rem;
+  }
+}
+

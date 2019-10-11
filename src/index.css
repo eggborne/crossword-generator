@@ -7,21 +7,21 @@
   --cell-color: #eee;
   --button-color: rgb(5, 8, 49);
   
-  --cell-letter-size: 1rem;
+  --main-font: 'Catamaran';
+  --cell-letter-size: 1.2rem;
   --cell-number-size: 0.4rem;
 }
 html {
   font-size: calc(1rem + 1vmin);
+  font-family: var(--main-font);
 }
 * {
+  user-select: none;
   box-sizing: border-box;
 }
 body {  
-  max-height: 100%;
+  position: fixed;
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-    sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -36,6 +36,7 @@ button {
   height: 100%;
   padding: 0.5rem;
   background: var(--button-color);
+  cursor: pointer;
 }
 
 @media (orientation: landscape) {

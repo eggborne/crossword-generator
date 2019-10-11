@@ -1,16 +1,19 @@
-import React, { useEffect } from 'react';
+import React, { useCallback } from 'react';
 import styled from 'styled-components';
-// import './App.css';
 
 const CellContainer = styled.div`
   position: relative;
-  background-color: ${props => props.blank ? 'var(--blank-color)' : 'var(--cell-color)'};
+  background-color: ${props => props.blank ? 'var(--blank-color)' : 'transparent'};
   outline: 1px solid var(--blank-color);  
   display: flex;
   justify-content: center;
   align-items: center;
   font-weight: 700;
-  max-height: 100%;
+  width: ${props => `calc(var(--board-size) / ${props.cellDimensions.width})`};
+  height: ${props => `calc(var(--board-size) / ${props.cellDimensions.width})`};
+  max-height: ${props => `calc(var(--board-size) / ${props.cellDimensions.height})`};
+  padding: 0;
+  /* cursor: ${props => props.mode === 'editMode' ? 'pointer' : ''}; */
 `;
 const Number = styled.div`
   position: absolute;
@@ -18,24 +21,39 @@ const Number = styled.div`
   left: 0;
   font-size: var(--cell-number-size);
   align-self: flex-start;
-  justify-self: flex-start;
+  justify-self: flex-start;  
 `;
 const Letter = styled.div`
-  font-size: var(--cell-letter-size);
+  padding: 0;
+  font-size: var(--cell-letter-size);  
+  text-align: center;
 `;
 
 function Cell(props) {
-
+  console.count('cell')
+  const onClickCell = () => {
+    props.handleCellChange(props.coords, !props.blank)
+  };
   return (
-    <CellContainer blank={props.blank}>
+    <CellContainer blank={props.blank} cellDimensions={props.cellDimensions} onPointerDown={onClickCell}>
       <Number>
-        { props.cellData.number }
+        { props.number }
       </Number>
-      <Letter>
-        { props.cellData.letter.toUpperCase() }
+      <Letter>        
+        { props.letter }
       </Letter>
     </CellContainer>
   );
 }
 
-export default Cell;
+function isEqual(prevProps, nextProps) {
+  let equal =
+    prevProps.blank === nextProps.blank
+    && prevProps.number === nextProps.number
+    
+  ;
+  return equal;
+}
+
+export default React.memo(Cell, isEqual)
+// export default Cell;

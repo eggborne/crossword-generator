@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 import ToggleButton from './ToggleButton';
 
@@ -14,6 +14,13 @@ const PanelContainer = styled.div`
   padding: 0.75rem;
   align-items: stretch;
   justify-items: stretch;
+
+  & > #size-slider {
+    grid-column-start: 1;
+    grid-column-end: span 1;
+    width: 100%;
+    justify-self: center;
+  }
   @media (orientation: landscape) {
     width: 100%;
     height: 100%;
@@ -24,9 +31,6 @@ const PanelContainer = styled.div`
 `;
 
 function ControlPanel(props) {
-  useEffect(() => {
-    console.log('tile created');
-  }, [])
   return (
     <PanelContainer>
       <ToggleButton 
@@ -35,14 +39,18 @@ function ControlPanel(props) {
         on={props.mode === 'editMode'}
       />
       <ToggleButton
-        labels={{off: 'SUCK LEMONS', on: 'SUCKING LEMONS'}}
-        onClickButton={() => props.toggleMode('suckingLemons')}
-        on={props.mode === 'suckingLemons'}
+        labels={{off: 'EDIT WORDS', on: 'EDITING WORDS'}}
+        onClickButton={() => props.toggleMode('letterMode')}
+        on={props.mode === 'letterMode'}
       />
       <button>CHICKENS</button>
       <button>CHICKENS</button>
       <button>CHICKENS</button>
-      <button>CHICKENS</button>
+      <ToggleButton
+        labels={{off: 'CLEAR ALL', on: 'CLEAR ALL'}}
+        onClickButton={props.clearBoard}        
+      />
+      {/* <input value={props.cellDimensions.width} onChange={ props.changeBoardSize } id='size-slider' type='number' min={10} max={30} /> */}
     </PanelContainer>
   );
 }

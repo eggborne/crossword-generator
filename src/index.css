@@ -1,13 +1,19 @@
 :root {
+  --cells-wide: 13;
+  --cells-high: 13;
   --header-height: 2.5rem;
-  --main-padding: 1rem;
-  --board-size: calc(100vw - var(--main-padding) * 2);
-  --header-color: #282c34;
+  --main-padding: 0.75rem;
+  --board-size: calc(100vw - var(--main-padding) * 2.5);
+  --body-bg-color: rgb(200, 200, 200);
+  --header-color: #2d3038;
   --blank-color: #111;
-  --cell-color: #eee;
-  --button-color: rgb(5, 8, 49);
-  
+  --cell-color: white;
+  --button-color: rgb(58, 66, 109);
+  --button-on-color: #0a0;
+  --text-color: #eee;
   --main-font: 'Catamaran';
+  --cell-width: calc(var(--board-size) / var(--cells-wide));
+  --cell-height: calc(var(--board-size) / var(--cells-wide));
   --cell-letter-size: 1.2rem;
   --cell-number-size: 0.4rem;
 }
@@ -24,19 +30,7 @@ body {
   margin: 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
-button {
-  color: var(--cell-color);
-  border-width: calc(var(--header-height) / 12);
-  border-style: solid;
-  border-color: #ffffff55;
-  border-radius: calc(var(--header-height) / 8);
-  font-size: 0.75rem;
-  width: 100%;
-  height: 100%;
-  padding: 0.5rem;
-  background: var(--button-color);
-  cursor: pointer;
+  /* overflow: hidden; */
 }
 
 @media (orientation: landscape) {

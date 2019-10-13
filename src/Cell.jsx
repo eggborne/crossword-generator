@@ -1,41 +1,43 @@
-import React, { useCallback } from 'react';
+import React, { useCallback }from 'react';
 import styled from 'styled-components';
 
-const CellContainer = styled.div`
+const CellContainer = styled.div`  
   position: relative;
-  background-color: ${props => props.blank ? 'var(--blank-color)' : 'transparent'};
-  outline: 1px solid var(--blank-color);  
+  outline: calc(var(--cell-width) / 24) solid var(--blank-color);  
   display: flex;
   justify-content: center;
   align-items: center;
   font-weight: 700;
-  width: ${props => `calc(var(--board-size) / ${props.cellDimensions.width})`};
-  height: ${props => `calc(var(--board-size) / ${props.cellDimensions.width})`};
-  max-height: ${props => `calc(var(--board-size) / ${props.cellDimensions.height})`};
+  width: var(--cell-width);
+  height: var(--cell-height);
+  max-height: var(--cell-height);
   padding: 0;
-  /* cursor: ${props => props.mode === 'editMode' ? 'pointer' : ''}; */
+  transition: background 210ms ease;
 `;
 const Number = styled.div`
   position: absolute;
   top: 0; 
-  left: 0;
+  left: calc(var(--cell-width) / 32);
   font-size: var(--cell-number-size);
-  align-self: flex-start;
-  justify-self: flex-start;  
+  pointer-events: none;
 `;
 const Letter = styled.div`
   padding: 0;
-  font-size: var(--cell-letter-size);  
+  font-size: calc(var(--cell-letter-size) / 2);  
   text-align: center;
+  pointer-events: none;
 `;
 
-function Cell(props) {
-  console.count('cell')
-  const onClickCell = () => {
-    props.handleCellChange(props.coords, !props.blank)
-  };
+const Cell =(props) => {
+  // console.pink('CELL')
   return (
-    <CellContainer blank={props.blank} cellDimensions={props.cellDimensions} onPointerDown={onClickCell}>
+    <CellContainer 
+      style={props.style} 
+      className='cell-container' 
+      blank={props.blank} 
+      {...{ [window.CLICK_METHOD.down]: () => props.handleCellClick(props.index, !props.blank) }}
+      // {...{ [window.CLICK_METHOD.up]: props.applyCellLabels }}
+    >
       <Number>
         { props.number }
       </Number>
@@ -50,7 +52,9 @@ function isEqual(prevProps, nextProps) {
   let equal =
     prevProps.blank === nextProps.blank
     && prevProps.number === nextProps.number
-    
+    && prevProps.letter === nextProps.letter
+    && prevProps.coords === nextProps.coords
+    && prevProps.handleCellClick === nextProps.handleCellClick
   ;
   return equal;
 }

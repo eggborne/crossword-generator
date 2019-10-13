@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@material-ui/core": "^4.5.0",
+    "axios": "^0.19.0",
+    "console-green": "^1.0.3",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "react-is": "^16.8.6",
@@ -30,5 +33,5 @@
       "last 1 safari version"
     ]
   },
-  "homepage" : "https://eggborne.com/cwg"
+  "homepage": "https://eggborne.com/cwg"
 }

@@ -2,11 +2,11 @@ import React, { useEffect } from 'react';
 import styled from 'styled-components';
 import Slider from "@material-ui/core/Slider";
 import Typography from '@material-ui/core/Typography';
-
-import InfoBar from "./InfoBar";
 import ToggleButton from './ToggleButton';
+import NavTabs from './NavTabs';
 
-const PanelContainer = styled.div`  
+const PanelContainer = styled.div`
+  --panel-space: calc(var(--view-height) - var(--header-height) - 100vw);
   font-size: calc(var(--header-height) / 3.5);
   position: relative;
   max-width: 100%;  
@@ -14,12 +14,10 @@ const PanelContainer = styled.div`
   background: var(--header-color);
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  grid-auto-rows: 3rem;
-  grid-column-gap: 0.75rem;
-  grid-row-gap: 0.75rem;
-  padding: 0.75rem;
-  align-items: stretch;
-  justify-items: stretch;
+  grid-template-rows: var(--header-height) repeat(2, 3rem);
+  grid-column-gap: var(--main-padding);
+  grid-row-gap: var(--main-padding);
+  padding: var(--main-padding);
 
   & > .slider-area {
     grid-column-end: span 3;
@@ -34,10 +32,6 @@ const PanelContainer = styled.div`
   & > .slider-area > span > *:first-child {
     transform-origin: center;
     transform: scaleY(4);
-    box-shadow:  -1px -1px 1px #00000044,  
-    1px -1px 1px #00000044,
-    -1px 1px 1px #00000044,
-     1px 1px 1px #00000044;
   }
   & #discrete-slider {
     font-size: inherit;
@@ -54,6 +48,35 @@ const PanelContainer = styled.div`
   & > .slider-area > span > *:last-child {
    transform: scale(2);
   }
+  & > .text-label {
+    align-self: center;
+    justify-self: center;
+    font-size: 1rem
+  }
+  & .nav-tabs {
+    grid-column-start: 2;
+    grid-column-end: span 2;
+    align-self: center;
+  }
+  
+  & .MuiTab-root {
+    font-size: 1rem !important;
+    
+  }
+  & .MuiTab-root:first-of-type {
+    font-size: 0.65rem !important;
+  }
+  & .MuiAppBar-colorPrimary {
+    background: var(--button-color) !important;
+    border-radius: calc(var(--header-height) / 10);    
+  }
+  & .MuiTabs-scroller > span {
+   background: #fff;;
+   /* border: 0 !important; */
+   border-radius: calc(var(--header-height) / 10);
+   z-index: 2;
+   height: 100%;
+  }
 
   @media (orientation: landscape) {
     width: 100%;
@@ -66,12 +89,12 @@ const PanelContainer = styled.div`
 
 function ControlPanel(props) {
   return (
-    <PanelContainer>
-      <ToggleButton 
+    <PanelContainer>      
+      {/* <ToggleButton 
         labels={{off: 'EDIT PATTERN', on: 'EDITING PATTERN'}}
         onClickButton={() => props.toggleMode('editMode')}
         on={props.mode === 'editMode'}
-      />
+      /> */}
       <ToggleButton
         labels={{off: 'APPLY LABELS', on: 'APPLY LABELS'}}
         onClickButton={props.applyCellLabels}        
@@ -80,14 +103,50 @@ function ControlPanel(props) {
         labels={{off: 'CLEAR ALL', on: 'CLEAR ALL'}}
         onClickButton={props.clearBoard}        
       />
-       <ToggleButton 
+      <ToggleButton
+        labels={{off: 'SHADE ALL', on: 'SHADE ALL'}}
+        onClickButton={props.fillBoard}        
+      />
+      {/* <ToggleButton 
         labels={{off: 'EDIT LETTERS', on: 'EDITING LETTERS'}}
         onClickButton={() => props.toggleMode('letterMode')}
         on={props.mode === 'letterMode'}
+      />      
+      <ToggleButton
+        labels={{off: 'WORD LIST'}}
+        linkUrl={'/wordlist'}
+        onClickButton={props.showWordList}        
+      /> */}
+      {/* <ToggleButton
+        labels={{off: 'WORD LIST', on: 'WORD LIST'}}
+        onClickButton={props.showWordList}        
       />
       <ToggleButton
         labels={{off: 'WORD LIST', on: 'WORD LIST'}}
         onClickButton={props.showWordList}        
+      />
+      <ToggleButton
+        labels={{off: 'WORD LIST', on: 'WORD LIST'}}
+        onClickButton={props.showWordList}        
+      />
+      <ToggleButton
+        labels={{off: 'WORD LIST', on: 'WORD LIST'}}
+        onClickButton={props.showWordList}        
+      />
+      <ToggleButton
+        labels={{off: 'WORD LIST', on: 'WORD LIST'}}
+        onClickButton={props.showWordList}        
+      />
+      <ToggleButton
+        labels={{off: 'WORD LIST', on: 'WORD LIST'}}
+        onClickButton={props.showWordList}        
+      /> */}
+      <div className='text-label'>Symmetry</div>
+      <NavTabs
+        defaultValue={1}
+        labels={['None', '2', '4']}
+        onChangeSelected={props.handleChangeSymmetry}
+        value={props.symmetry}
       />
       <div id='diagram-size-slider-area' className='slider-area'>
         <Typography id='discrete-slider'>
@@ -104,12 +163,6 @@ function ControlPanel(props) {
           onChangeCommitted={props.changeBoardSize}
         />
       </div>
-
-      <InfoBar
-        mode={props.mode}
-        cellDimensions={props.cellDimensions}
-        percentBlack={props.percentBlack}
-      />
     </PanelContainer>
   );
 }

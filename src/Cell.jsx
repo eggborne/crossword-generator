@@ -13,6 +13,10 @@ const CellContainer = styled.div`
   max-height: var(--cell-height);
   padding: 0;
   transition: background 210ms ease;
+
+  &.selected {
+    background: #00ff0099 !important;
+  }
 `;
 const Number = styled.div`
   position: absolute;
@@ -29,13 +33,16 @@ const Letter = styled.div`
 `;
 
 const Cell =(props) => {
-  // console.pink('CELL')
+  // console.count('CELL');
   return (
     <CellContainer 
+      id={`cell-${props.index}`}
       style={props.style} 
-      className='cell-container' 
+      className={props.selected ? 'cell-container selected' : 'cell-container'}
       blank={props.blank} 
-      {...{ [window.CLICK_METHOD.down]: () => props.handleCellClick(props.index, !props.blank) }}
+      {...{ [window.CLICK_METHOD.down]: props.handleCellClick }}
+      // onClick={() => props.handleCellClick(props.index) }
+
       // {...{ [window.CLICK_METHOD.up]: props.applyCellLabels }}
     >
       <Number>
@@ -51,10 +58,13 @@ const Cell =(props) => {
 function isEqual(prevProps, nextProps) {
   let equal =
     prevProps.blank === nextProps.blank
+    && prevProps.selected === nextProps.selected
     && prevProps.number === nextProps.number
     && prevProps.letter === nextProps.letter
     && prevProps.coords === nextProps.coords
-    && prevProps.handleCellClick === nextProps.handleCellClick
+    && prevProps.mode === nextProps.mode
+    && prevProps.symmetry === nextProps.symmetry
+    // && prevProps.handleCellClick === nextProps.handleCellClick
   ;
   return equal;
 }

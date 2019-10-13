@@ -1,8 +1,17 @@
-import React, { useState, useEffect, useLayoutEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Board from "./Board";
 import ControlPanel from "./ControlPanel";
+import InfoBar from "./InfoBar";
+import WordClueList from "./WordClueList";
 import styled from "styled-components";
 import axios from 'axios';
+import NavTabs from './NavTabs';
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  Link
+} from "react-router-dom";
 
 window.addEventListener('resize', () => {
   document.documentElement.style.setProperty('--view-height', window.innerHeight + 'px')
@@ -24,15 +33,43 @@ const AppContainer = styled.div`
   background: var(--body-bg-color);
   min-height: var(--view-height);
   width: 100vw;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  display: grid;
+  align-items: stretch;
+  justify-items: stretch;
+  grid-template-rows: 
+    var(--header-height)
+    100vmin
+    auto
+    1fr
+    var(--footer-height)
+  ;
+
+  & .MuiTabs-scroller > span {
+   background: transparent;
+   margin 0;
+   border: calc(var(--main-padding) / 4) solid green;
+   border-top-left-radius: calc(var(--header-height) / 10);
+   border-top-right-radius: calc(var(--header-height) / 10);
+   /* z-index: 0; */
+   height: 100%;
+  }
+  & .MuiTab-root {
+    font-size: 0.75rem;
+    font-family: var(--main-font);   
+    background: transparent;
+  }
+  & .MuiBox-root {
+    display: none;
+  }
+  & .MuiAppBar-colorPrimary {
+    background: var(--header-color);
+  }
 
   @media (orientation: landscape) {
     display: grid;
     grid-template-columns: 
-      auto
-      minmax(auto, 35vw)
+      1fr
+      minmax(min-content, 35vw)
     ;
     grid-template-rows: 
       var(--header-height)
@@ -59,10 +96,7 @@ const Header = styled.header`
   }
 `;
 const BoardArea = styled.div`
-  width: 100%;
   height: 100%;
-  max-height: 100vw;
-  flex-grow: 1;  
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -72,29 +106,60 @@ const BoardArea = styled.div`
   }
 `;
 
+const Footer = styled.footer`
+  font-size: 0.65rem;  
+  background-color: var(--header-color);
+  padding: 0 var(--main-padding);
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  color: var(--text-color);
+  text-shadow:
+   -2px -1px 0 #00000088,  
+    2px -1px 0 #00000088,
+    -2px 1px 0 #00000088,
+     2px 1px 0 #00000088;
+  
+  & > a {
+    opacity: 0.75;
+    transition: opacity 300ms ease;
+    transition-delay: 200ms;
+  }
+  &.hidden > a {
+    opacity: 0;
+  }
+`;
+
 const randomInt = (min, max) => {
   return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
 function App() {
   // console.big('APP')
+  const [loaded, setLoaded] = useState(false);
   const [wordList, setWordList] = useState(new Array(15).fill(undefined, 0, 15));
   const [cells, setCells] = useState([]);
   const [mode, setMode] = useState('editMode');
   const [cellDimensions, setCellDimensions] = useState({});
   const [selectedCellIndex, setSelectedCellIndex] = useState(undefined);
+  const [symmetry, setSymmetry] = useState(1);
 
   useEffect(() => {
-    let cellArray = [];
-    if (cells[0]) {
-      cellArray = [...cells];
-    } else {
-      cellArray = getnewCellArrayWithDimensions({width: 13, height: 13});
+    console.warn('----------- [] useEffect -------------------------------')
+    let cellArray = getnewCellArrayWithDimensions({width: 13, height: 13});    
+    cellArray = getIndexedCells(cellArray);
+    setCells(cellArray);
+    requestAnimationFrame(() => {
+      setLoaded(true);    
+    });
+  }, []);
+
+  useEffect(() => {
+    console.log('mode', mode)
+    if (mode === 'editMode') {
+      setSelectedCellIndex(undefined)
     }
-    let initialCells = getLabelledNumberedCells(cellArray);
-    setCells(initialCells);
-    
-  }, [cellDimensions.width, cellDimensions.height]);
+  }, [mode]);
 
   const getFullWordListOfLength = (length) => {
     return axios({
@@ -171,33 +236,55 @@ function App() {
     clearBoard(newSize);
   }
 
-  const handleCellFlip = (cellIndex, newBlankStatus) => {
-    console.green('flipping', mode)
+  const getMirrorCoords = (symmetry, targetCell) => {
+    let coordArray = [];
+    if (symmetry >= 1) {
+      let mirrorCoords = {
+        column: (cellDimensions.width-1)-targetCell.coords.column, 
+        row: (cellDimensions.height-1)-targetCell.coords.row
+      };
+      coordArray.push(mirrorCoords);      
+    }
+    if (symmetry === 2) {
+      let mirrorCoords1 = {
+        column: targetCell.coords.row, 
+        row: (cellDimensions.width-1)-targetCell.coords.column
+      };
+      let mirrorCoords2 = {
+        column: (cellDimensions.width-1)-mirrorCoords1.column, 
+        row: (cellDimensions.height-1)-mirrorCoords1.row
+      };
+      coordArray.push(mirrorCoords1);      
+      coordArray.push(mirrorCoords2);      
+    }
+    return coordArray;
+  }
+
+  const handleCellClick = (e) => {
+    let cellIndex = parseInt(e.target.id.split('-')[1]);
+    console.log('clicked cell', cellIndex)
     let newCells = [...cells];
-    // let targetCell = newCells[coords.row][coords.column];
     let targetCell = newCells.flat()[cellIndex];
-    let targetCoords = targetCell.coords;
-    let mirrorCoords = {
-      column: (cellDimensions.width-1)-targetCoords.column, 
-      row: (cellDimensions.height-1)-targetCoords.row
-    };
-    let mirrorCell = newCells[mirrorCoords.row][mirrorCoords.column];
-    targetCell.blank = newBlankStatus;
-    mirrorCell.blank = newBlankStatus;
+    if (mode === 'editMode') {
+      let newBlankStatus = !targetCell.blank;      
+      targetCell.blank = newBlankStatus;
+      getMirrorCoords(symmetry, targetCell).forEach(coords => {
+        let mirrorCell = newCells[coords.row][coords.column];
+        mirrorCell.blank = newBlankStatus;
+      });  
+    } else if (mode === 'letterMode') {      
+      console.log('selected cell', targetCell);
+      console.log('selected index', targetCell.index);
+      if (selectedCellIndex !== targetCell.index) {
+        setSelectedCellIndex(targetCell.index)
+      }
+    }
     setCells(newCells);
-    getRandomWordOfLength(11).then(resp => {
-      console.log('GOT RANDO', resp.word)
-    })
     // applyCellLabels(newCells);
   }
 
-  const handleCellSelect = (cellIndex, newSelectedStatus) => {
-
-    let newCells = [...cells];
-    let targetCell = newCells[cellIndex];
-  }
-
-  function getLabelledNumberedCells(baseArray, setCoords) {
+  function getLabelledCells(baseArray, setCoords) {
+    let start = window.performance.now();
     if (!Array.isArray(baseArray)) { 
       baseArray = cells;
     }
@@ -208,43 +295,50 @@ function App() {
     [...baseArray].forEach((row, r, rowsArray) => {
       updatedCells[r] = row.map((cell, c, cellArray) => {        
         let cellTotalIndex = (r * cellDimensions.height) + c + 1;            
-        let isBlank = cell.blank;       
         let numbered;
-        if (isBlank) {
+        if (cell.blank) {
+          // make the cells below and to the right numbered
           numberedIndexes.push(cellTotalIndex + cellDimensions.width);
           numberedIndexes.push(cellTotalIndex + 1);
-        } else {
-          let bottomHasSpace = cellTotalIndex <= (totalCells - (cellDimensions.height - 1));
-          let rightHasSpace = c <= cellDimensions.width - 1;
-          let onTopOrLeftEdge = r === 0 || c === 0;
-          if (bottomHasSpace && rightHasSpace && (onTopOrLeftEdge || numberedIndexes.includes(cellTotalIndex))) {
+        } else {          
+          if (r === 0 || c === 0 || numberedIndexes.includes(cellTotalIndex)) {            
             numbered = true
             onNumberedCell++;
           }
         }
-        let rando = 'abcdefghijklmnopqrstuvwxyz'.split('')[Math.round(25 * cellTotalIndex/(cellDimensions.width * cellDimensions.height))];
         let newCell = { ...cell }
-        newCell.letter = true ? '' : rando;
-        // newCell.blank = cell.blank;
-        if (!newCell.coords) {
-          newCell.coords = { row: r, column: c }
-        }        
-        if (setCoords) {
-          newCell.coords = { row: r, column: c }
-          // newCell.blank = false;
-          newCell.index = cellTotalIndex;
-        } else {
+        if (numbered === (cell.number === null)) {
           newCell.number = numbered ? onNumberedCell : null;
         }
         return cell = newCell;
       });
     });
+    console.warn('labeled cells in', window.performance.now() - start);
+    return updatedCells;
+  }
+
+  function getIndexedCells(baseArray, shadeAll) {
+    let start = window.performance.now();
+    let updatedCells = [...baseArray];
+    let cellsDone = 0;
+    [...baseArray].forEach((row, r) => {
+      updatedCells[r] = row.map((cell, c) => {        
+        let newCell = { ...cell };
+        newCell.coords = { row: r, column: c};
+        newCell.blank = shadeAll;
+        newCell.number = null;
+        newCell.letter = '';
+        newCell.index = cellsDone;
+        cellsDone++;
+        return cell = newCell;
+      });
+    });
+    console.warn('indexed cells in', window.performance.now() - start);
     return updatedCells;
   }
 
   function applyCellLabels(baseArray) {
-    let newCells = getLabelledNumberedCells(baseArray);
-    setCells(newCells);
+    setCells(getLabelledCells(baseArray));
   }
 
   function getnewCellArrayWithDimensions(newDimensions) {
@@ -260,18 +354,35 @@ function App() {
   }
 
   const clearBoard = (newSize) => {
+    let start = window.performance.now();
+    setCells([]);
     if (typeof newSize !== 'number') {
       newSize = cellDimensions.width;
     }
-    setCells([]);
-    let newCells = getLabelledNumberedCells(getnewCellArrayWithDimensions({width: newSize, height: newSize}), true);
+    let newCells = getnewCellArrayWithDimensions({width: newSize, height: newSize});
+    newCells = getIndexedCells(newCells);
     setCells(newCells);
-    // requestAnimationFrame(() => {
-    // });
+    console.warn('cleared board in', window.performance.now() - start);
+  }
+  const fillBoard = () => {
+    let start = window.performance.now();
+    setCells([]);
+    let newCells = getnewCellArrayWithDimensions({width: cellDimensions.width, height: cellDimensions.height});
+    newCells = getIndexedCells(newCells, true);
+    setCells(newCells);
+    console.warn('shaded board in', window.performance.now() - start);
   }
 
   const showWordList = () => {
     console.log('balls')
+  }
+
+  const handleChangeMode = (newIndex) => {
+    let newMode = ['editMode', 'letterMode', 'clueMode'][newIndex];
+    setMode(newMode);
+  }
+  const handleChangeSymmetry = (newIndex) => {
+    setSymmetry(newIndex);      
   }
 
   const percentBlack = useMemo(() => 
@@ -279,29 +390,58 @@ function App() {
   , [cells])
 
   return (
+    <Router>
+
     <AppContainer>
-      <Header>Crossword Puzzle Generator</Header>
-      <BoardArea>
-        <Board
-          percentBlack={percentBlack}
-          cellDimensions={cellDimensions}
-          cells={cells}
-          mode={mode}
-          handleCellClick={mode === 'editMode' ? handleCellFlip : handleCellSelect}
-          applyCellLabels={applyCellLabels}
-        />
-      </BoardArea>
-      <ControlPanel
-        mode={mode}        
-        percentBlack={percentBlack}
-        toggleMode={toggleMode}
-        clearBoard={clearBoard}
-        cellDimensions={cellDimensions}
-        changeBoardSize={changeBoardSize}
-        applyCellLabels={applyCellLabels}
-        showWordList={showWordList}
-      />      
+      <Header>Crossword Generator</Header>
+      <Switch>
+        <Route path='/wordlist'>
+          <WordClueList
+
+          />
+        </Route>
+        <Route path='/'>
+          <BoardArea>
+            <Board
+              percentBlack={percentBlack}
+              cellDimensions={cellDimensions}
+              cells={cells.flat()}
+              mode={mode}
+              symmetry={symmetry}
+              selectedCellIndex={selectedCellIndex}
+              handleCellClick={handleCellClick}
+              // applyCellLabels={applyCellLabels}
+              />
+          </BoardArea>
+          <NavTabs          
+            defaultValue={0}
+            labels={['Diagram', 'Words', 'Clues']}
+            onChangeSelected={handleChangeMode}
+            value={['editMode', 'letterMode', 'clueMode'].indexOf(mode)}
+          />
+          <ControlPanel
+            mode={mode}        
+            percentBlack={percentBlack}
+            toggleMode={toggleMode}
+            clearBoard={clearBoard}
+            fillBoard={fillBoard}
+            cellDimensions={cellDimensions}
+            symmetry={symmetry}
+            changeBoardSize={changeBoardSize}
+            applyCellLabels={applyCellLabels}
+            showWordList={showWordList}
+            handleChangeSymmetry={handleChangeSymmetry}
+          />      
+          <InfoBar
+            mode={mode}
+            cellDimensions={cellDimensions}
+            percentBlack={percentBlack}
+          />
+        </Route>
+      </Switch>
+      {/* <Footer className={loaded ? null : 'hidden'}><a href='https://mikedonovan.dev/'>mikedonovan.dev</a></Footer> */}
     </AppContainer>
+    </Router>
   );
 }
 

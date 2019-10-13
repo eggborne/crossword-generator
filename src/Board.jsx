@@ -3,10 +3,9 @@ import styled from 'styled-components';
 import Card from "@material-ui/core/Card";
 import Cell from './Cell';
 
-const BoardContainer = styled(Card)`
-  box-sizing: content-box;
+const BoardContainer = styled(Card)`  
   width: var(--board-size);
-  height: calc(var(--board-size) * (var(--cells-high) / var(--cells-width) / 3));
+  max-height: calc(var(--board-size) * (var(--cells-high) / var(--cells-width) / 3));
   display: grid;
   grid-template-rows: repeat(var(--cells-wide), 1fr);
   grid-template-columns: repeat(var(--cells-high), 1fr);
@@ -28,15 +27,16 @@ const BoardContainer = styled(Card)`
 `;
 
 function Board(props) {
-  console.info(props)
-  const flatCells = useMemo(() => props.cells.flat(), [props.cells, props.percentBlack]);
   return (
     <BoardContainer raised className='board'>
-      {flatCells.map((cellObj, c) => (    
+      {props.cells.map((cellObj, c) => (    
         <Cell
-          style={{ backgroundColor: cellObj.blank ? 'var(--blank-color' : 'transparent'}}
-          index={c}
-          key={c}
+          key={c+'-'+cellObj.row+'-'+cellObj.column}
+          mode={props.mode}
+          style={{ backgroundColor: cellObj.blank ? 'var(--blank-color' : 'transparent' }}
+          selected={cellObj.index === props.selectedCellIndex}
+          symmetry={props.symmetry}
+          index={cellObj.index}
           blank={cellObj.blank}
           letter={cellObj.letter}
           number={cellObj.number}

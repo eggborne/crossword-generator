@@ -1,7 +1,8 @@
 :root {
   --cells-wide: 13;
   --cells-high: 13;
-  --header-height: 2.5rem;
+  --header-height: 2.25rem;
+  --footer-height: 1.5rem;
   --main-padding: 0.75rem;
   --board-size: calc(100vw - var(--main-padding) * 2.5);
   --body-bg-color: rgb(200, 200, 200);
@@ -25,12 +26,19 @@ html {
   user-select: none;
   box-sizing: border-box;
 }
+a {  
+  text-decoration: none;
+}
+a:link, a:visited {
+  color: var(--text-color);
+}
 body {  
   position: fixed;
+  max-width: 100vw;
   margin: 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* overflow: hidden; */
+  overflow: hidden;
 }
 
 @media (orientation: landscape) {
@@ -41,4 +49,3 @@ body {
     --cell-number-size: 0.5rem;
   }
 }
-
